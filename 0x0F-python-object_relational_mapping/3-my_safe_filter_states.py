@@ -1,43 +1,27 @@
 #!/usr/bin/python3
-"""Module that lists all states from the hbtn_0e_0_usa database."""
-import sys
+"""
+Script that takes in an argument and displays all values
+in the states table of hbtn_0e_0_usa where name matches the argument
+but safe from MySQL injections!
+"""
 import MySQLdb
+from sys import argv
 
-if __name__ == "__main__":
-    import MySQLdb
-    import sys
+# The code should not be executed when imported
+if __name__ == '__main__':
 
-    # Get the command-line arguments
-    mysql_username = sys.argv[1]
-    mysql_password = sys.argv[2]
-    database_name = sys.argv[3]
-    state_name = sys.argv[4]
+    # make a connection to the database
+    db = MySQLdb.connect(host="localhost", port=3306, user=argv[1],
+                         passwd=argv[2], db=argv[3])
 
-    # Connect to the MySQL server
-    db = MySQLdb.connect(
-        host='localhost',
-        port=3306,
-        user=mysql_username,
-        passwd=mysql_password,
-        db=database_name
-    )
+    # It gives us the ability to have multiple seperate working environments
+    # through the same connection to the database.
+    cur = db.cursor()
+    cur.execute("SELECT * FROM states WHERE BINARY name = %s", [argv[4]])
 
-    # Create a cursor object to execute queries
-    cursor = db.cursor()
-
-    # Prepare the SQL query with placeholders
-    sql_query = "SELECT * FROM states WHERE name = %s ORDER BY id ASC"
-
-    # Execute the query with the state name as a parameter
-    cursor.execute(sql_query, (state_name,))
-
-    # Fetch all the rows returned by the query
-    rows = cursor.fetchall()
-
-    # Display the results
-    for row in rows:
-        print(row)
-
-    # Close the cursor and database connection
-    cursor.close()
+    rows = cur.fetchall()
+    for i in rows:
+        print(i)
+    # Clean up process
+    cur.close()
     db.close()
